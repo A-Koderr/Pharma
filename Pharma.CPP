@@ -38,6 +38,12 @@ public:
   {
     return isAdmin;
   }
+  void set_user(char N[], char P[], int ISADMIN)
+  {
+    strcpy(uName, N);
+    strcpy(uPass, P);
+    isAdmin = ISADMIN;
+  }
   int Edit(char N[], char P[], int ISADMIN);
   void view_all();
   int Reg(char N[], char P[], int ISADMIN);//Already exist = -1, Reg_Done = 0;
@@ -142,8 +148,10 @@ void user::view_all()
       cout<<"\n\t"<<setw(30)<<T.uName<<setw(30)<<T.uPass<<setw(10);
       if(T.isAdmin == 1)
 	cout<<" YES";
-      else
+      else if(T.isAdmin == 0)
 	cout<<" NO";
+      else
+	cout<<"Unknown";
       file.read((char*)&T, sizeof(T));
     }
   }
@@ -217,17 +225,16 @@ int stock::inStock(unsigned int DrC)
     {
       if(DrC == temp.Drug.get_dCode())
       {
-	if(temp.QTY > 0)
-	{
-	  file.close();
-	  return 1;
-	}
+	file.close();
+	return (temp.QTY);
       }
       file.read((char*)&temp, sizeof(temp));
     }
+    file.close();
+    return -1;
   }
   file.close();
-  return 0;
+  return -2;
 }
 
 void stock::stock_init(drug T)
@@ -765,6 +772,7 @@ int main_login()
   {
     cout<<"\n\n\n\n\n\n\nLogin Successful!!\nPress any key to continue.....";
     getch();
+    usr.set_user(un, up, 1);
     clrscr();
     main_admin(usr);
   }
@@ -772,6 +780,7 @@ int main_login()
   {
     cout<<"\n\n\n\n\n\n\nLogin Successful!!\nPress any key to continue.....";
     getch();
+    usr.set_user(un, up, 0);
     clrscr();
     main_user(usr);
   }
@@ -807,8 +816,8 @@ void main_admin(user &admin)
 	      header(admin.get_uName());
 	      inv_drug inv[10];
 	      float Total = 0;
-	      int i = 0;
-	      unsigned int DCODE, QTY, MRP, BNO = INV.get_new_bno();
+	      int i = 0, zero_items = 1;
+	      unsigned int DCODE = 0, QTY, MRP, BNO = INV.get_new_bno();
 	      char CUST[40], DOC[40], D[50];
 	      cout<<"\tEnter Customer Name : ";
 	      cin.getline(CUST, 40);
@@ -818,14 +827,61 @@ void main_admin(user &admin)
 	      do
 	      {
 		stock temp;
+		int flag = 0;
+		unsigned int temp_dcode = DCODE;
 		cout<<"\tEnter Drug Code : ";
 		cin>>DCODE;
 		cin_flush();
-		if(temp.inStock(DCODE))
+		if(DCODE == temp_dcode)
+		  flag = 1;
+		if(temp.inStock(DCODE) > 0)
 		{
-		  cout<<"\tEnter Quantity : ";
-		  cin>>QTY;
-		  cin_flush();
+		  do
+		  {
+		    unsigned int temp_qty = QTY;
+		    cout<<"\tEnter Quantity : ";
+		    cin>>QTY;
+		    if(flag)
+		    {
+		      --i;
+		      QTY += temp_qty;
+		    }
+		    cin_flush();
+		    if(temp.inStock(DCODE) < QTY)
+		    {
+		      cout<<"\n\tOnly "<<temp.inStock(DCODE)<<" Available!!!";
+		      cout<<"\n\tPress any key to Try Again......";
+		      getch();
+		      if(!zero_items)
+		      {
+			header(admin.get_uName());
+			cout<<"\tBill No. : "<<BNO;
+			cout<<"\n\tCustomer Name : "<<CUST;
+			cout<<"\n\tDoctor Name : "<<DOC;
+			cout.setf(ios::left);
+			cout<<"\n\t"<<setw(5)<<"SN"<<setw(30)<<"Particulars"<<setw(4)<<" QTY"<<setw(7)<<"   MRP";
+			for(int k = 0; k<(i+1); k++)
+			{
+			  cout.setf(ios::left);
+			  cout<<"\n\t"<<setw(5)<<inv[k].get_sno()<<setw(30)<<inv[k].get_dName();
+			  cout.setf(ios::right);
+			  cout<<setw(4)<<inv[k].get_qty();
+			  cout<<setw(7)<<inv[k].get_MRP();
+			}
+			line();
+			cout<<"\tDrug Code : "<<DCODE<<"\n";
+		      }
+		      else
+		      {
+			header(admin.get_uName());
+			cout<<"\tEnter Customer Name : "<<CUST;
+			cout<<"\n\tEnter Doctor Name : "<<DOC;
+			cout<<"\n\tEnter Drug Code : "<<DCODE<<"\n";
+		      }
+		    }
+		    else
+		      break;
+		  }while(1);
 		  cout<<"\tEnter MRP : ";
 		  cin>>MRP;
 		  cin_flush();
@@ -834,13 +890,28 @@ void main_admin(user &admin)
 		    Total += inv[i].get_MRP();
 		    do
 		    {
+		      zero_items = 0;
 		      cout<<"\n\tDo You Want to add more? Y/N";
 		      char co;
 		      co = getch();
 		      if(co == 'y' || co == 'Y')
 		      {
+			header(admin.get_uName());
+			cout<<"\tBill No. : "<<BNO;
+			cout<<"\n\tCustomer Name : "<<CUST;
+			cout<<"\n\tDoctor Name : "<<DOC;
+			cout.setf(ios::left);
+			cout<<"\n\t"<<setw(5)<<"SN"<<setw(30)<<"Particulars"<<setw(4)<<" QTY"<<setw(7)<<"   MRP";
+			for(int k = 0; k<(i+1); k++)
+			{
+			  cout.setf(ios::left);
+			  cout<<"\n\t"<<setw(5)<<inv[k].get_sno()<<setw(30)<<inv[k].get_dName();
+			  cout.setf(ios::right);
+			  cout<<setw(4)<<inv[k].get_qty();
+			  cout<<setw(7)<<inv[k].get_MRP();
+			}
+			line();
 			++i;
-			clrscr();
 			break;
 		      }
 		      else if(co == 'n' || co == 'N')
@@ -856,43 +927,67 @@ void main_admin(user &admin)
 		    }while(1);
 		  }
 		}
-	      }while(wh == 1 && i<10);
-	      header(admin.get_uName());
-	      cout<<"\tBill No. : "<<BNO;
-	      cout<<"\n\tCustomer Name : "<<CUST;
-	      cout<<"\n\tDoctor Name : "<<DOC;
-	      cout.setf(ios::left);
-	      cout<<"\n\t"<<setw(5)<<"SN"<<setw(30)<<"Particulars"<<setw(6)<<"QTY"<<setw(4)<<"MRP";
-	      for(int k = 0; k<(i+1); k++)
-	      {
-		cout.setf(ios::left);
-		cout<<"\n\t"<<setw(5)<<inv[k].get_sno()<<setw(30)<<inv[k].get_dName()<<setw(6)<<inv[k].get_qty();
-		cout.setf(ios::right);
-		cout<<setw(4)<<inv[k].get_MRP();
-	      }
-	      cout<<"\n\n\tTotal : "<<Total;
-	      line();
-	      do
-	      {
-		cout<<"\nAmout Paid? Y/N";
-		char co;
-		co = getch();
-		if(co == 'y' || co == 'Y')
-		{
-		  INV.save(BNO, CUST, DOC, inv, (i+1));
-		  break;
-		}
-		else if(co == 'n' || co == 'N')
-		{
-		  wh = 0;
-		  break;
-		}
 		else
 		{
-		  cout<<"\n Wrong KEY. Press any key to try again";
-		  clrscr();
+		  cout<<"\n\tItem Out Of Stock.\n\tPress any key to Try Again...";
+		  getch();
+		  header(admin.get_uName());
+		  cout<<"\tBill No. : "<<BNO;
+		  cout<<"\n\tCustomer Name : "<<CUST;
+		  cout<<"\n\tDoctor Name : "<<DOC;
+		  cout.setf(ios::left);
+		  cout<<"\n\t"<<setw(5)<<"SN"<<setw(30)<<"Particulars"<<setw(4)<<" QTY"<<setw(7)<<"   MRP";
+		  for(int k = 0; k<(i+1); k++)
+		  {
+		    cout.setf(ios::left);
+		    cout<<"\n\t"<<setw(5)<<inv[k].get_sno()<<setw(30)<<inv[k].get_dName();
+		    cout.setf(ios::right);
+		    cout<<setw(4)<<inv[k].get_qty();
+		    cout<<setw(7)<<inv[k].get_MRP();
+		  }
+		  line();
 		}
-	      }while(1);
+	      }while(wh == 1 && i<10);
+	      if(!zero_items)
+	      {
+		header(admin.get_uName());
+		cout<<"\tBill No. : "<<BNO;
+		cout<<"\n\tCustomer Name : "<<CUST;
+		cout<<"\n\tDoctor Name : "<<DOC;
+		cout.setf(ios::left);
+		cout<<"\n\t"<<setw(5)<<"SN"<<setw(30)<<"Particulars"<<setw(6)<<"QTY"<<setw(7)<<"   MRP";
+		for(int k = 0; k<(i+1); k++)
+		{
+		  cout.setf(ios::left);
+		  cout<<"\n\t"<<setw(5)<<inv[k].get_sno()<<setw(30)<<inv[k].get_dName();
+		  cout.setf(ios::right);
+		  cout<<setw(6)<<inv[k].get_qty();
+		  cout<<setw(7)<<inv[k].get_MRP();
+		}
+		cout<<"\n\n\tTotal : "<<Total;
+		line();
+		do
+		{
+		  cout<<"\nAmout Paid? Y/N";
+		  char co;
+		  co = getch();
+		  if(co == 'y' || co == 'Y')
+		  {
+		    INV.save(BNO, CUST, DOC, inv, (i+1));
+		    break;
+		  }
+		  else if(co == 'n' || co == 'N')
+		  {
+		    wh = 0;
+		    break;
+		  }
+		  else
+		  {
+		    cout<<"\n Wrong KEY. Press any key to try again";
+		    clrscr();
+		  }
+		}while(1);
+	      }
 	      break;
 	    case 2 :
 	      header(admin.get_uName());
@@ -958,12 +1053,17 @@ void main_admin(user &admin)
 	      cout<<"\tEnter Qty to Remove : ";
 	      cin>>QTy;
 	      cin_flush();
-	      QTy *= -1;
-	      char fs;
-	      cin.get(fs);
-	      stocks.Edit(DCo, QTy);
+	      if(QTy <= stocks.inStock(DCo))
+		{
+		  QTy *= -1;
+		  stocks.Edit(DCo, QTy);
+		  cout<<"\n\tDone!!";
+		}
+	      else
+		cout<<"\n\tQty can't be greater then stock!!!";
 	      line();
-	      cout<<"Done Press any key to Go Back.....";
+	      cout<<"Press any key to Go Back.....";
+	      getch();
 	      break;
 	    case 4 :
 	      break;
@@ -1058,10 +1158,12 @@ void main_admin(user &admin)
 		    cout<<"\n\t\tMy User Name : "<<admin.get_uName();
 		    cout<<"\n\t\tMy Password : "<<admin.get_uPass();
 		    cout<<"\n\t\tAccount Type : ";
-		    if(admin.get_isAdmin())
+		    if(admin.get_isAdmin() == 1)
 		      cout<<"Admin";
-		    else
+		    else if(admin.get_isAdmin() == 0)
 		      cout<<"Non - Admin";
+		    else
+		      cout<<"Unknown";
 		    line();
 		    cout<<"Press any key to Go Back.....";
 		    getch();
@@ -1298,8 +1400,8 @@ void main_user(user &User)
 	      header(User.get_uName());
 	      inv_drug inv[10];
 	      float Total = 0;
-	      int i = 0;
-	      unsigned int DCODE, QTY, MRP, BNO = INV.get_new_bno();
+	      int i = 0, zero_items = 1;
+	      unsigned int DCODE = 0, QTY, MRP, BNO = INV.get_new_bno();
 	      char CUST[40], DOC[40], D[50];
 	      cout<<"\tEnter Customer Name : ";
 	      cin.getline(CUST, 40);
@@ -1309,14 +1411,61 @@ void main_user(user &User)
 	      do
 	      {
 		stock temp;
+		int flag = 0;
+		unsigned int temp_dcode = DCODE;
 		cout<<"\tEnter Drug Code : ";
 		cin>>DCODE;
 		cin_flush();
-		if(temp.inStock(DCODE))
+		if(DCODE == temp_dcode)
+		  flag = 1;
+		if(temp.inStock(DCODE) > 0)
 		{
-		  cout<<"\tEnter Quantity : ";
-		  cin>>QTY;
-		  cin_flush();
+		  do
+		  {
+		    unsigned int temp_qty = QTY;
+		    cout<<"\tEnter Quantity : ";
+		    cin>>QTY;
+		    if(flag)
+		    {
+		      --i;
+		      QTY += temp_qty;
+		    }
+		    cin_flush();
+		    if(temp.inStock(DCODE) < QTY)
+		    {
+		      cout<<"\n\tOnly "<<temp.inStock(DCODE)<<" Available!!!";
+		      cout<<"\n\tPress any key to Try Again......";
+		      getch();
+		      if(!zero_items)
+		      {
+			header(User.get_uName());
+			cout<<"\tBill No. : "<<BNO;
+			cout<<"\n\tCustomer Name : "<<CUST;
+			cout<<"\n\tDoctor Name : "<<DOC;
+			cout.setf(ios::left);
+			cout<<"\n\t"<<setw(5)<<"SN"<<setw(30)<<"Particulars"<<setw(4)<<" QTY"<<setw(7)<<"   MRP";
+			for(int k = 0; k<(i+1); k++)
+			{
+			  cout.setf(ios::left);
+			  cout<<"\n\t"<<setw(5)<<inv[k].get_sno()<<setw(30)<<inv[k].get_dName();
+			  cout.setf(ios::right);
+			  cout<<setw(4)<<inv[k].get_qty();
+			  cout<<setw(7)<<inv[k].get_MRP();
+			}
+			line();
+			cout<<"\tDrug Code : "<<DCODE<<"\n";
+		      }
+		      else
+		      {
+			header(User.get_uName());
+			cout<<"\tEnter Customer Name : "<<CUST;
+			cout<<"\n\tEnter Doctor Name : "<<DOC;
+			cout<<"\n\tEnter Drug Code : "<<DCODE<<"\n";
+		      }
+		    }
+		    else
+		      break;
+		  }while(1);
 		  cout<<"\tEnter MRP : ";
 		  cin>>MRP;
 		  cin_flush();
@@ -1325,13 +1474,28 @@ void main_user(user &User)
 		    Total += inv[i].get_MRP();
 		    do
 		    {
+		      zero_items = 0;
 		      cout<<"\n\tDo You Want to add more? Y/N";
 		      char co;
 		      co = getch();
 		      if(co == 'y' || co == 'Y')
 		      {
+			header(User.get_uName());
+			cout<<"\tBill No. : "<<BNO;
+			cout<<"\n\tCustomer Name : "<<CUST;
+			cout<<"\n\tDoctor Name : "<<DOC;
+			cout.setf(ios::left);
+			cout<<"\n\t"<<setw(5)<<"SN"<<setw(30)<<"Particulars"<<setw(4)<<" QTY"<<setw(7)<<"   MRP";
+			for(int k = 0; k<(i+1); k++)
+			{
+			  cout.setf(ios::left);
+			  cout<<"\n\t"<<setw(5)<<inv[k].get_sno()<<setw(30)<<inv[k].get_dName();
+			  cout.setf(ios::right);
+			  cout<<setw(4)<<inv[k].get_qty();
+			  cout<<setw(7)<<inv[k].get_MRP();
+			}
+			line();
 			++i;
-			clrscr();
 			break;
 		      }
 		      else if(co == 'n' || co == 'N')
@@ -1347,43 +1511,67 @@ void main_user(user &User)
 		    }while(1);
 		  }
 		}
-	      }while(wh == 1 && i<10);
-	      header(User.get_uName());
-	      cout<<"\tBill No. : "<<BNO;
-	      cout<<"\n\tCustomer Name : "<<CUST;
-	      cout<<"\n\tDoctor Name : "<<DOC;
-	      cout.setf(ios::left);
-	      cout<<"\n\t"<<setw(5)<<"SN"<<setw(30)<<"Particulars"<<setw(6)<<"QTY"<<setw(4)<<"MRP";
-	      for(int k = 0; k<(i+1); k++)
-	      {
-		cout.setf(ios::left);
-		cout<<"\n\t"<<setw(5)<<inv[k].get_sno()<<setw(30)<<inv[k].get_dName()<<setw(6)<<inv[k].get_qty();
-		cout.setf(ios::right);
-		cout<<setw(4)<<inv[k].get_MRP();
-	      }
-	      cout<<"\n\n\tTotal : "<<Total;
-	      line();
-	      do
-	      {
-		cout<<"\nAmout Paid? Y/N";
-		char co;
-		co = getch();
-		if(co == 'y' || co == 'Y')
-		{
-		  INV.save(BNO, CUST, DOC, inv, (i+1));
-		  break;
-		}
-		else if(co == 'n' || co == 'N')
-		{
-		  wh = 0;
-		  break;
-		}
 		else
 		{
-		  cout<<"\n Wrong KEY. Press any key to try again";
-		  clrscr();
+		  cout<<"\n\tItem Out Of Stock.\n\tPress any key to Try Again...";
+		  getch();
+		  header(User.get_uName());
+		  cout<<"\tBill No. : "<<BNO;
+		  cout<<"\n\tCustomer Name : "<<CUST;
+		  cout<<"\n\tDoctor Name : "<<DOC;
+		  cout.setf(ios::left);
+		  cout<<"\n\t"<<setw(5)<<"SN"<<setw(30)<<"Particulars"<<setw(4)<<" QTY"<<setw(7)<<"   MRP";
+		  for(int k = 0; k<(i+1); k++)
+		  {
+		    cout.setf(ios::left);
+		    cout<<"\n\t"<<setw(5)<<inv[k].get_sno()<<setw(30)<<inv[k].get_dName();
+		    cout.setf(ios::right);
+		    cout<<setw(4)<<inv[k].get_qty();
+		    cout<<setw(7)<<inv[k].get_MRP();
+		  }
+		  line();
 		}
-	      }while(1);
+	      }while(wh == 1 && i<10);
+	      if(!zero_items)
+	      {
+		header(User.get_uName());
+		cout<<"\tBill No. : "<<BNO;
+		cout<<"\n\tCustomer Name : "<<CUST;
+		cout<<"\n\tDoctor Name : "<<DOC;
+		cout.setf(ios::left);
+		cout<<"\n\t"<<setw(5)<<"SN"<<setw(30)<<"Particulars"<<setw(6)<<"QTY"<<setw(7)<<"   MRP";
+		for(int k = 0; k<(i+1); k++)
+		{
+		  cout.setf(ios::left);
+		  cout<<"\n\t"<<setw(5)<<inv[k].get_sno()<<setw(30)<<inv[k].get_dName();
+		  cout.setf(ios::right);
+		  cout<<setw(6)<<inv[k].get_qty();
+		  cout<<setw(7)<<inv[k].get_MRP();
+		}
+		cout<<"\n\n\tTotal : "<<Total;
+		line();
+		do
+		{
+		  cout<<"\nAmout Paid? Y/N";
+		  char co;
+		  co = getch();
+		  if(co == 'y' || co == 'Y')
+		  {
+		    INV.save(BNO, CUST, DOC, inv, (i+1));
+		    break;
+		  }
+		  else if(co == 'n' || co == 'N')
+		  {
+		    wh = 0;
+		    break;
+		  }
+		  else
+		  {
+		    cout<<"\n Wrong KEY. Press any key to try again";
+		    clrscr();
+		  }
+		}while(1);
+	      }
 	      break;
 	    case 2 :
 	      header(User.get_uName());
