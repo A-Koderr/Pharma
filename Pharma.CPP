@@ -1,5 +1,6 @@
 /*
 Pharmacy Management
+This Application is contributed by Astitwa Kumar
 */
 #include<iostream.h>
 #include<fstream.h>
