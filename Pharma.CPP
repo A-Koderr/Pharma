@@ -1,5 +1,5 @@
 /*
-Pharmacy Management
+Pharmacy Management 
 */
 #include<iostream>
 #include<fstream>
