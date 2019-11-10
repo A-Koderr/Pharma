@@ -1,16 +1,14 @@
 /*
-Pharmacy Management 
+Pharmacy Management
 */
-#include<iostream>
-#include<fstream>
+#include<iostream.h>
+#include<fstream.h>
 #include<conio.h>
 #include<string.h>
-#include<iomanip>
+#include<iomanip.h>
 #include<stdio.h>
 #include<process.h>
 #include<ctype.h>
-
-using namespace std;
 
 /*
 user class
@@ -59,7 +57,7 @@ int user::Login(char N[], char P[])
 
     user temp;
     ifstream u_iFile ;
-    u_iFile.open("users.dat", ios::binary|ios::in);
+    u_iFile.open("users.dat", ios::binary|ios::nocreate);
     if(u_iFile.good())
     {
       u_iFile.read((char*)&temp, sizeof(temp));
@@ -79,7 +77,7 @@ int user::Login(char N[], char P[])
   }
 
 int user::Reg(char N[], char P[], int ISADMIN)
-{
+  {
     strcpy(uName, N);
     strcpy(uPass, P);
     isAdmin = ISADMIN;
@@ -87,59 +85,52 @@ int user::Reg(char N[], char P[], int ISADMIN)
     user temp;
 
     fstream u_file;
-    fstream i_file;
+    u_file.open("users.dat", ios::binary|ios::in|ios::out);
 
-    i_file.open("users.dat", ios::binary|ios::in);
-    if(i_file.is_open())
+    u_file.read((char*)&temp, sizeof(temp));
+    while(!u_file.fail()) //when fail() bit not set
     {
-        u_file.read((char*)&temp, sizeof(temp));
-        while(!u_file.fail()) //when fail() bit not set
-        {
-            if(!(strcmp(temp.uName, uName)))
-            {
-                return -1;
-            }
-            u_file.read((char*)&temp, sizeof(temp));
-        }
-        u_file.open("users.dat", ios::binary|ios::out|ios::app);
-        u_file.write((char*)this, sizeof(*this));
-        u_file.close();
+      if(!(strcmp(temp.uName, uName)))
+      {
+	return -1;
+      }
+      u_file.read((char*)&temp, sizeof(temp));
     }
-    else
-    {
-        u_file.open("users.dat", ios::binary|ios::out);
-        u_file.write((char*)this, sizeof(*this));
-        u_file.close();
-    }
+
+    u_file.clear(); //clearing the fail bit
+    u_file.seekp(u_file.tellg());
+
+    u_file.write((char*)this, sizeof(*this));
+
+    u_file.close();
     return 0;
-}
+  }
 
 
 int user::Edit(char N[], char P[], int ISADMIN)
 {
-    user temp;
-    fstream u_File ;
-    u_File.open("users.dat", ios::binary|ios::in|ios::out);
-    if(u_File.good())
+  user temp;
+  fstream u_File ;
+  u_File.open("users.dat", ios::binary|ios::in|ios::out|ios::nocreate);
+  if(u_File.good())
+  {
+    u_File.read((char*)&temp, sizeof(temp));
+    while(! (u_File.eof()) )
     {
-        u_File.read((char*)&temp, sizeof(temp));
-        while(! (u_File.eof()) )
-        {
-            if(! (strcmp(temp.uName, uName)) )
-            {
-                u_File.seekp(u_File.tellg() - (sizeof(*this)));
-                strcpy(uName, N);
-                strcpy(uPass, P);
-                isAdmin = ISADMIN;
-                u_File.write((char*)this, sizeof(*this));
-                u_File.close();
-                return 1;
-            }
-            u_File.read((char*)&temp, sizeof(temp));
-        }
+      if(! (strcmp(temp.uName, uName)) )
+      {
+	u_File.seekp(u_File.tellg() - (sizeof(*this)));
+	strcpy(uName, N);
+	strcpy(uPass, P);
+	isAdmin = ISADMIN;
+	u_File.write((char*)this, sizeof(*this));
+	u_File.close();
+	return 1;
+      }
     }
-    u_File.close();
-    return 0;
+  }
+  u_File.close();
+  return 0;
 }
 
 void user::view_all()
@@ -148,7 +139,7 @@ void user::view_all()
   cout.setf(ios::left);
   cout<<"\n\t"<<setw(30)<<"User Name"<<setw(30)<<"Password"<<setw(10)<<"Is Admin";
   ifstream file;
-  file.open("users.dat", ios::binary|ios::in);
+  file.open("users.dat", ios::binary|ios::nocreate);
   if(file.good())
   {
     file.read((char*)&T, sizeof(T));
@@ -194,7 +185,7 @@ int drug::set_dCode(unsigned int dcode)
   dCode = dcode;
   drug temp;
   ifstream ifile;
-  ifile.open("drug.dat", ios::binary|ios::in);
+  ifile.open("drug.dat", ios::binary|ios::nocreate);
   if(ifile.good())
   {
     ifile.read((char*)&temp, sizeof(temp));
@@ -226,7 +217,7 @@ int stock::inStock(unsigned int DrC)
 {
   stock temp;
   ifstream file;
-  file.open("stocks.dat", ios::binary|ios::in);
+  file.open("stocks.dat", ios::binary|ios::nocreate);
   if(file.good())
   {
     file.read((char*)&temp, sizeof(temp));
@@ -262,7 +253,7 @@ void stock::View()
   cout.setf(ios::left);
   cout<<"\t"<<setw(15)<<"D. Code"<<setw(40)<<"D. Name"<<setw(5)<<"QTY";
   ifstream file;
-  file.open("stocks.dat", ios::binary|ios::in);
+  file.open("stocks.dat", ios::binary|ios::nocreate);
   if(file.good())
   {
     file.read((char*)&temp, sizeof(temp));
@@ -277,7 +268,7 @@ void stock::Edit(unsigned int dcode, int qty)
 {
   stock temp;
   fstream file;
-  file.open("stocks.dat", ios::binary|ios::in|ios::out);
+  file.open("stocks.dat", ios::binary|ios::in|ios::out|ios::nocreate);
   if(file.good())
   {
     file.read((char*)&temp, sizeof(temp));
@@ -303,8 +294,8 @@ int drug::del(unsigned int dcode)
   drug temp;
   ifstream ifile;
   ofstream ofile;
-  ifile.open("drug.dat", ios::binary|ios::in);
-  ofile.open("newdrug.dat", ios::binary|ios::out|ios::trunc|ios::app);
+  ifile.open("drug.dat", ios::binary|ios::nocreate);
+  ofile.open("newdrug.dat", ios::binary|ios::noreplace|ios::app);
   if(ifile.good())
   {
     ifile.read((char*)&temp, sizeof(temp));
@@ -332,7 +323,7 @@ int drug::add(unsigned int dcode, char dname[])
   int fl = -1;//flag
   drug temp;
   ifstream ifile;
-  ifile.open("drug.dat", ios::binary|ios::in);
+  ifile.open("drug.dat", ios::binary|ios::nocreate);
   if(ifile.good())
   {
     ifile.read((char*)&temp, sizeof(temp));
@@ -355,22 +346,15 @@ int drug::add(unsigned int dcode, char dname[])
     else
     {
       ifile.close();
-      fstream ofile;
-      ofile.open("drug.dat", ios::binary|ios::in|ios::out|ios::app);
+      ofstream ofile;
+      ofile.open("drug.dat", ios::binary|ios::nocreate|ios::app);
 
       temp.dCode = dcode;
       for(int w = 0; w<strlen(dname); w++)
-	  dname[w] = toupper(dname[w]);
+	dname[w] = toupper(dname[w]);
       strcpy(temp.dName, dname);
-      if(ofile.is_open())
-      {
-          ofile.write((char*)&temp, sizeof(temp));
-          stocks.stock_init(temp);
-      }
-      else
-      {
-          cout<<"Somethimg went wrong!!!";
-      }
+      ofile.write((char*)&temp, sizeof(temp));
+      stocks.stock_init(temp);
       ofile.close();
       return 0;
     }
@@ -382,7 +366,7 @@ void drug::view_all()
   int rec = 0;
   drug temp;
   ifstream file;
-  file.open("drug.dat", ios::binary|ios::in);
+  file.open("drug.dat", ios::binary|ios::nocreate);
   if(file.good())
   {
     cout.setf(ios::left);
@@ -397,7 +381,7 @@ void drug::view_all()
       {
 	cout<<"\nPress any key to view More....";
 	getch();
-	system("cls");
+	clrscr();
       }
       file.read((char*)&temp, sizeof(temp));
     }
@@ -508,7 +492,7 @@ void invoice::show(unsigned int bno)
 {
   invoice temp;
   ifstream file;
-  file.open("invoice.dat", ios::binary|ios::in);
+  file.open("invoice.dat", ios::binary|ios::nocreate);
   file.read((char*)&temp, sizeof(temp));
   int fn = 0;
   if(file.good())
@@ -550,7 +534,7 @@ int invoice::get_new_bno()
 {
   invoice temp;
   ifstream file;
-  file.open("invoice.dat", ios::binary|ios::in);
+  file.open("invoice.dat", ios::binary|ios::nocreate);
   file.read((char*)&temp, sizeof(temp));
   if(file.good())
   {
@@ -589,7 +573,7 @@ public:
   {
     fstream file;
     file.clear();
-    file.open("store.dat", ios::binary|ios::in|ios::in);
+    file.open("store.dat", ios::binary|ios::in|ios::nocreate);
     if(file.good())
     {
       file.read((char*)this, sizeof(*this));
@@ -645,7 +629,7 @@ void store::show()
 
 void wel_msg()
 {
-  system("cls");
+  clrscr();
   cout<<"\n\n\n\n\n\n\n";
   cout<<"\t__           __ ______   _       _____   ____    __  __  ______ \n";
   cout<<"\t\\ \\         / /|  ____| | |     / ____/ / __ \\  |  \\/  | | ____|\n";
@@ -673,7 +657,7 @@ void pass(char p[], int max)
 
 void header(char acc[])
 {
-  system("cls");
+  clrscr();
   cout<<"\n\n|------------------------------------------------------------------------------|";
   int space = ((80 - strlen(StInfo.get_StName()))/2);
   for(int i = 1; i<=space; i++)
@@ -712,15 +696,15 @@ int main_init()
     wel_msg();
     cout<<"\n\n\n\n\n\nPress any key to continue......";
     getch();
-    system("cls");
+    clrscr();
     cout<<"\n\n\t\tIt Seems you are starting this app for First time\n";
     cout<<"\t\tPlease do submit Store Info First.\n\n";
     StInfo.set_store();
-    system("cls");
+    clrscr();
     cout<<"\n\n\n\n\n\n\t\tThis software needs an Administrator Account\n";
     cout<<"\t\tPress any key to create one.......";
     getch();
-    system("cls");
+    clrscr();
     cout<<"\n\n\n\n\n\n\t\tHey There,\n";
     char uname[30], upass[30], p1[30], p2[30];
     cout<<"\t\tEnter User Name : ";
@@ -747,7 +731,7 @@ int main_init()
       {
 	cout<<"\n\n\n\n\n\n\t\tPassword NOT MATCHED. Press any key to Try Again.....";
 	getch();
-	system("cls");
+	clrscr();
 	cout<<"\n\n\n\n\n\n";
       }
     }
@@ -766,7 +750,7 @@ int main_login()
   cout<<StInfo.get_StName();
   cout<<"\n\n\n\n\n\nPress any key to continue......";
   getch();
-  system("cls");
+  clrscr();
   cout<<"\n\n\n\n\n\n";
   cout<<"\t\t\t|-------------------------|\n";
   cout<<"\t\t\t           LOGIN\n";
@@ -789,7 +773,7 @@ int main_login()
     cout<<"\n\n\n\n\n\n\nLogin Successful!!\nPress any key to continue.....";
     getch();
     usr.set_user(un, up, 1);
-    system("cls");
+    clrscr();
     main_admin(usr);
   }
   else if(uType == 0)
@@ -797,7 +781,7 @@ int main_login()
     cout<<"\n\n\n\n\n\n\nLogin Successful!!\nPress any key to continue.....";
     getch();
     usr.set_user(un, up, 0);
-    system("cls");
+    clrscr();
     main_user(usr);
   }
   return 0;
@@ -805,957 +789,901 @@ int main_login()
 
 void main_admin(user &admin)
 {
-    int ch;
-    do
+  int ch;
+  do
+  {
+    header(admin.get_uName());
+    cout<<"\t1. Sales\n\t2. Inventory\n\t3. Drug Management\n\t4. Accounts\n\t5. Store Info\n\t6. Logout\n\t7. EXIT\n\t8. Factory Reset";
+    line();
+    cout<<"Enter Your Choice : ";
+    cin>>ch;
+    cin_flush();
+    switch(ch)
     {
-        header(admin.get_uName());
-        cout<<"\t1. Sales\n\t2. Inventory\n\t3. Drug Management\n\t4. Accounts\n\t5. Store Info\n\t6. Logout\n\t7. EXIT\n\t8. Factory Reset";
-        line();
-        cout<<"Enter Your Choice : ";
-        cin>>ch;
-        cin_flush();
-        switch(ch)
-        {
-            case 1 :
-            {
-                int C;
-                do
-                {
-                    header(admin.get_uName());
-                    cout<<"\t1. New Sale\n\t2. View old Bill\n\t3. Back";
-                    line();
-                    cout<<"Enter Your Choice : ";
-                    cin>>C;
-                    cin_flush();
-                    switch(C)
-                    {
-                        case 1 :
-                        {
-                            header(admin.get_uName());
-                            inv_drug inv[10];
-                            float Total = 0;
-                            int i = 0, zero_items = 1;
-                            unsigned int DCODE = 0, QTY, MRP, BNO = INV.get_new_bno();
-                            char CUST[40], DOC[40], D[50];
-                            cout<<"\tEnter Customer Name : ";
-                            cin.getline(CUST, 40);
-                            cout<<"\tEnter Doctor Name : ";
-                            cin.getline(DOC, 40);
-                            int wh = 1;
-                            do
-                            {
-                                stock temp;
-                                int flag = 0;
-                                unsigned int temp_dcode = DCODE;
-                                cout<<"\tEnter Drug Code : ";
-                                cin>>DCODE;
-                                cin_flush();
-                                if(DCODE == temp_dcode)
-                                    flag = 1;
-                                if(temp.inStock(DCODE) > 0)
-                                {
-                                    do
-                                    {
-                                        unsigned int temp_qty = QTY;
-                                        cout<<"\tEnter Quantity : ";
-                                        cin>>QTY;
-                                        if(flag)
-                                        {
-                                            --i;
-                                            QTY += temp_qty;
-                                        }
-                                        cin_flush();
-                                        if(temp.inStock(DCODE) < QTY)
-                                        {
-                                            cout<<"\n\tOnly "<<temp.inStock(DCODE)<<" Available!!!";
-                                            cout<<"\n\tPress any key to Try Again......";
-                                            getch();
-                                            if(!zero_items)
-                                            {
-                                                header(admin.get_uName());
-                                                cout<<"\tBill No. : "<<BNO;
-                                                cout<<"\n\tCustomer Name : "<<CUST;
-                                                cout<<"\n\tDoctor Name : "<<DOC;
-                                                cout.setf(ios::left);
-                                                cout<<"\n\t"<<setw(5)<<"SN"<<setw(30)<<"Particulars"<<setw(4)<<" QTY"<<setw(7)<<"   MRP";
-                                                for(int k = 0; k<(i+1); k++)
-                                                {
-                                                    cout.setf(ios::left);
-                                                    cout<<"\n\t"<<setw(5)<<inv[k].get_sno()<<setw(30)<<inv[k].get_dName();
-                                                    cout.setf(ios::right);
-                                                    cout<<setw(4)<<inv[k].get_qty();
-                                                    cout<<setw(7)<<inv[k].get_MRP();
-                                                }
-                                                line();
-                                                cout<<"\tDrug Code : "<<DCODE<<"\n";
-                                            }
-                                            else
-                                            {
-                                                header(admin.get_uName());
-                                                cout<<"\tEnter Customer Name : "<<CUST;
-                                                cout<<"\n\tEnter Doctor Name : "<<DOC;
-                                                cout<<"\n\tEnter Drug Code : "<<DCODE<<"\n";
-                                            }
-                                        }
-                                        else
-                                          break;
-                                    }while(1);
-                                    cout<<"\tEnter MRP : ";
-                                    cin>>MRP;
-                                    cin_flush();
-                                    if(inv[i].set((i+1), DCODE, QTY, MRP))
-                                    {
-                                        Total += inv[i].get_MRP();
-                                        do
-                                        {
-                                            zero_items = 0;
-                                            cout<<"\n\tDo You Want to add more? Y/N";
-                                            char co;
-                                            co = getch();
-                                            if(co == 'y' || co == 'Y')
-                                            {
-                                                header(admin.get_uName());
-                                                cout<<"\tBill No. : "<<BNO;
-                                                cout<<"\n\tCustomer Name : "<<CUST;
-                                                cout<<"\n\tDoctor Name : "<<DOC;
-                                                cout.setf(ios::left);
-                                                cout<<"\n\t"<<setw(5)<<"SN"<<setw(30)<<"Particulars"<<setw(4)<<" QTY"<<setw(7)<<"   MRP";
-                                                for(int k = 0; k<(i+1); k++)
-                                                {
-                                                    cout.setf(ios::left);
-                                                    cout<<"\n\t"<<setw(5)<<inv[k].get_sno()<<setw(30)<<inv[k].get_dName();
-                                                    cout.setf(ios::right);
-                                                    cout<<setw(4)<<inv[k].get_qty();
-                                                    cout<<setw(7)<<inv[k].get_MRP();
-                                                }
-                                                line();
-                                                ++i;
-                                                break;
-                                            }
-                                            else if(co == 'n' || co == 'N')
-                                            {
-                                                wh = 0;
-                                                break;
-                                            }
-                                            else
-                                            {
-                                                cout<<"\n Wrong KEY. Press any key to try again";
-                                                system("cls");
-                                            }
-                                        }while(1);
-                                    }
-                                }
-                                else
-                                {
-                                    cout<<"\n\tItem Out Of Stock.\n\tPress any key to Try Again...";
-                                    getch();
-                                    header(admin.get_uName());
-                                    cout<<"\tBill No. : "<<BNO;
-                                    cout<<"\n\tCustomer Name : "<<CUST;
-                                    cout<<"\n\tDoctor Name : "<<DOC;
-                                    cout.setf(ios::left);
-                                    cout<<"\n\t"<<setw(5)<<"SN"<<setw(30)<<"Particulars"<<setw(4)<<" QTY"<<setw(7)<<"   MRP";
-                                    for(int k = 0; k<(i+1); k++)
-                                    {
-                                        cout.setf(ios::left);
-                                        cout<<"\n\t"<<setw(5)<<inv[k].get_sno()<<setw(30)<<inv[k].get_dName();
-                                        cout.setf(ios::right);
-                                        cout<<setw(4)<<inv[k].get_qty();
-                                        cout<<setw(7)<<inv[k].get_MRP();
-                                    }
-                                    line();
-                                }
-                            }while(wh == 1 && i<10);
-                            if(!zero_items)
-                            {
-                                header(admin.get_uName());
-                                cout<<"\tBill No. : "<<BNO;
-                                cout<<"\n\tCustomer Name : "<<CUST;
-                                cout<<"\n\tDoctor Name : "<<DOC;
-                                cout.setf(ios::left);
-                                cout<<"\n\t"<<setw(5)<<"SN"<<setw(30)<<"Particulars"<<setw(6)<<"QTY"<<setw(7)<<"   MRP";
-                                for(int k = 0; k<(i+1); k++)
-                                {
-                                    cout.setf(ios::left);
-                                    cout<<"\n\t"<<setw(5)<<inv[k].get_sno()<<setw(30)<<inv[k].get_dName();
-                                    cout.setf(ios::right);
-                                    cout<<setw(6)<<inv[k].get_qty();
-                                    cout<<setw(7)<<inv[k].get_MRP();
-                                }
-                                cout<<"\n\n\tTotal : "<<Total;
-                                line();
-                                do
-                                {
-                                    cout<<"\nAmout Paid? Y/N";
-                                    char co;
-                                    co = getch();
-                                    if(co == 'y' || co == 'Y')
-                                    {
-                                        INV.save(BNO, CUST, DOC, inv, (i+1));
-                                        break;
-                                    }
-                                    else if(co == 'n' || co == 'N')
-                                    {
-                                        wh = 0;
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        cout<<"\n Wrong KEY. Press any key to try again";
-                                        system("cls");
-                                    }
-                                }while(1);
-                            }
-                            break;
-                        }
-                        case 2:
-                        {
-                            header(admin.get_uName());
-                            unsigned int bno;
-                            invoice temp;
-                            cout<<"\tEnter Bill No. : ";
-                            cin>>bno;
-                            cin_flush();
-                            header(admin.get_uName());
-                            temp.show(bno);
-                            line();
-                            cout<<"\nPress any key to Go Back.....";
-                            getch();
-                            break;
-                        }
-                        case 3 :
-                        {
-                            break;
-                        }
-                        default :
-                        {
-                            cout<<"\nWrong Choice. Press any key to try again";
-                            getch();
-                            break;
-                        }
-                    }
-                }while(C != 3);
-                break;
-            }
-            case 2 :
-            {
-                int c;
-                do
-                {
-                    header(admin.get_uName());
-                    cout<<"\t1. View Stocks\n\t2. Add Stocks\n\t3. Remove Stocks\n\t4. Back";
-                    line();
-                    cout<<"Enter Your Choice : ";
-                    cin>>c;
-                    cin_flush();
-                    switch(c)
-                    {
-                        case 1 :
-                        {
-                            header(admin.get_uName());
-                            stocks.View();
-                            line();
-                            cout<<"Press any key to Go Back.....";
-                            getch();
-                            break;
-                        }
-                        case 2 :
-                        {
-                            header(admin.get_uName());
-                            cout<<"\tEnter Drug Code : ";
-                            unsigned int DC;
-                            int QTY;
-                            cin>>DC;
-                            cout<<"\tEnter Qty to ADD : ";
-                            cin>>QTY;
-                            cin_flush();
-                            stocks.Edit(DC, QTY);
-                            line();
-                            cout<<"Done Press any key to Go Back.....";
-                            break;
-                        }
-                        case 3 :
-                        {
-                            header(admin.get_uName());
-                            cout<<"\tEnter Drug Code : ";
-                            unsigned int DCo;
-                            int QTy;
-                            cin>>DCo;
-                            cout<<"\tEnter Qty to Remove : ";
-                            cin>>QTy;
-                            cin_flush();
-                            if(QTy <= stocks.inStock(DCo))
-                            {
-                                QTy *= -1;
-                                stocks.Edit(DCo, QTy);
-                                cout<<"\n\tDone!!";
-                            }
-                            else
-                                cout<<"\n\tQty can't be greater then stock!!!";
-                            line();
-                            cout<<"Press any key to Go Back.....";
-                            getch();
-                            break;
-                        }
-                        case 4 :
-                            break;
-                        default :
-                        {
-                            cout<<"\nWrong Choice. Press any key to try again";
-                            getch();
-                            break;
-                        }
-                    }
-                }while(c != 4);
-                break;
-            }
-            case 3 :
-            {
-                int P;
-                do
-                {
-                    header(admin.get_uName());
-                    cout<<"\t1. View All Drugs\n\t2. Add a Drug\n\t3. Remove a Drug\n\t4. Back";
-                    line();
-                    cout<<"Enter Your Choice : ";
-                    cin>>P;
-                    cin_flush();
-                    switch(P)
-                    {
-                        case 1 :
-                        {
-                            header(admin.get_uName());
-                            drugs.view_all();
-                            line();
-                            cout<<"Press any key to Go Back.....";
-                            getch();
-                            break;
-                        }
-                        case 2 :
-                        {
-                            header(admin.get_uName());
-                            unsigned int dco;
-                            char dna[50];
-                            cout<<"\n\tEnter New Drug Code : ";
-                            cin>>dco;
-                            cin_flush();
-                            cout<<"\tEnter New Drug Name : ";
-                            cin.getline(dna, 50);
-                            line();
-                            if(!drugs.add(dco, dna))
-                            cout<<"Success!!\nPress any key to go back....";
-                            getch();
-                            break;
-                        }
-                        case 3 :
-                        {
-                            header(admin.get_uName());
-                            unsigned int Dco;
-                            cout<<"Enter Drug Code to Delete : ";
-                            cin>>Dco;
-                            cin_flush();
-                            line();
-                            if(drugs.del(Dco))
-                            cout<<"Success!!\nPress any key to go back....";
-                            else
-                            cout<<"NOT FOUND!!\nPress any key to go back....";
-                            getch();
-                            break;
-                        }
-                        case 4 :
-                            break;
-                        default :
-                        {
-                            cout<<"\nWrong Choice. Press any key to try again";
-                            getch();
-                            break;
-                        }
-                    }
-                }while(P != 4);
-                break;
-            }
-            case 4 :
-            {
-                int x;
-                do
-                {
-                    header(admin.get_uName());
-                    cout<<"\t1. Manage My Account\n\t2. Manage other account\n\t3. Back\n";
-                    line();
-                    cout<<"Enter Your Choice : ";
-                    cin>>x;
-                    cin_flush();
-                    switch(x)
-                    {
-                        case 1 :
-                        {
-                            int l;
-                            do
-                            {
-                                header(admin.get_uName());
-                                cout<<"\t1. View My Account\n\t2. Change My Account\n\t3. Back\n";
-                                line();
-                                cout<<"Enter Your Choice : ";
-                                cin>>l;
-                                cin_flush();
-                                switch(l)
-                                {
-                                    case 1 :
-                                    {
-                                        header(admin.get_uName());
-                                        cout<<"\n\t\tMy User Name : "<<admin.get_uName();
-                                        cout<<"\n\t\tMy Password : "<<admin.get_uPass();
-                                        cout<<"\n\t\tAccount Type : ";
-                                        if(admin.get_isAdmin() == 1)
-                                            cout<<"Admin";
-                                        else if(admin.get_isAdmin() == 0)
-                                            cout<<"Non - Admin";
-                                        else
-                                            cout<<"Unknown";
-                                        line();
-                                        cout<<"Press any key to Go Back.....";
-                                        getch();
-                                        break;
-                                    }
-                                    case 2 :
-                                    {
-                                        char us[30], np1[30], np2[30];
-                                        header(admin.get_uName());
-                                        cout<<"\n\t\tEnter New User Name : ";
-                                        cin.getline(us, 30);
-                                        do
-                                        {
-                                            cout<<"\t\tEnter New Password : ";
-                                            pass(np1, 30);
-                                            cout<<"\n\t\tConfirm Password : ";
-                                            pass(np2, 30);
-                                            if(!strcmp(np1, np2))
-                                            {
-                                                if(admin.Edit(us, np1, 1))
-                                                    cout<<"SUCCESS!!!";
-                                                else
-                                                    cout<<"Something went wrong!!";
-                                                break;
-                                            }
-                                            else
-                                            {
-                                                cout<<"Press any key to try again";
-                                                getch();
-                                                system("cls");
-                                            }
-                                        }while(1);
-                                        break;
-                                    }
-                                    case 3 :
-                                        break;
-                                    default :
-                                        cout<<"\nWrong Choice. Press any key to try again";
-                                        getch();
-                                        break;
-                                }
-                            }while(l != 3);
-                            break;
-                        }
-                        case 2 :
-                        {
-                            int v;
-                            do
-                            {
-                                header(admin.get_uName());
-                                cout<<"\n\t1. Create New Account\n\t2. View All Account\n\t3. Back\n";
-                                line();
-                                cout<<"Enter Your Choice : ";
-                                cin>>v;
-                                cin_flush();
-                                switch(v)
-                                {
-                                    case 1 :
-                                    {
-                                        char UN[30], UP1[30], UP2[30];
-                                        header(admin.get_uName());
-                                        cout<<"\n\t\tEnter User Name : ";
-                                        cin.getline(UN, 30);
-                                        while(1)
-                                        {
-                                            cout<<"\t\tEnter Password : ";
-                                            pass(UP1, 30);
-                                            cout<<"\n\t\tConfirm Password : ";
-                                            pass(UP2, 30);
-                                            if(!strcmp(UP1, UP2))
-                                            {
-                                                user temp;
-                                                while(1)
-                                                {
-                                                    cout<<"\n\n\t\tIs An ADMIN? Y/N";
-                                                    char g;
-                                                    g = getche();
-                                                    if(g == 'y' || g == 'Y')
-                                                    {
-                                                        if(!temp.Reg(UN, UP1, 1))
-                                                        {
-                                                            line();
-                                                            cout<<"\nSuccess!!\nPress any key to Go Back...";
-                                                            getch();
-                                                        }
-                                                        break;
-                                                    }
-                                                    else if(g == 'n' || g == 'N')
-                                                    {
-                                                        if(!temp.Reg(UN, UP1, 0))
-                                                        {
-                                                            line();
-                                                            cout<<"\nSuccess!!\nPress any key to Go Back...";
-                                                            getch();
-                                                        }
-                                                        break;
-                                                    }
-                                                    else
-                                                    {
-                                                        cout<<"Wrong choice. Try Again";
-                                                        getch();
-                                                    }
-                                                }
-                                                break;
-                                            }
-                                            else
-                                            {
-                                                cout<<"Try Again";
-                                                getch();
-                                                system("cls");
-                                            }
-                                        }
-                                        break;
-                                    }
-                                    case 2 :
-                                    {
-                                        header(admin.get_uName());
-                                        admin.view_all();
-                                        line();
-                                        cout<<"Press any key to Go Back";
-                                        getch();
-                                        break;
-                                    }
-                                    case 3 :
-                                        break;
-                                }
-                            }while(v != 3);
-                            break;
-                        }
-                        case 3 :
-                            break;
-                        default :
-                            cout<<"\nWrong Choice. Press any key to try again";
-                            getch();
-                            break;
-                    }
-                }while(x != 3);
-                break;
-            }
-            case 5 :
-            {
-                int y;
-                do
-                {
-                header(admin.get_uName());
-                cout<<"\t1. View Store Info\n\t2. Change Store Info\n\t3. Back";
-                line();
-                cout<<"Enter Your Choice : ";
-                cin>>y;
-                cin_flush();
-                switch(y)
-                {
-                case 1 :
-                header(admin.get_uName());
-                StInfo.show();
-                line();
-                cout<<"Press any key to Go Back.....";
-                getch();
-                break;
-                case 2 :
-                header(admin.get_uName());
-                StInfo.set_store();
-                line();
-                cout<<"New Data Saved..";
-                cout<<"\nPress any key to Go Back.....";
-                getch();
-                break;
-                case 3 :
-                break;
-                default :
-                cout<<"\nWrong Choice. Press any key to try again";
-                getch();
-                break;
-                }
-                }while(y != 3);
-                break;
-            }
-            case 6 :
-                main_login();
-                break;
-            case 7 :
-                exit(0);
-                break;
-            case 8 :
-            {
-                int cont;
-                do
-                {
-                    header(admin.get_uName());
-                    cout<<"\n\nThis will Factory Reset the Application And Delete all the data stored";
-                    cout<<"\nDo you Want to continue?";
-                    cout<<"\n\t1. Yes\n\t2. No\n";
-                    cout<<"\n\n|------------------------------------------------------------------------------|\n";
-                    cout<<"Enter Your Choice : ";
-                    cin>>cont;
-                    cin_flush();
-                    switch(cont)
-                    {
-                        case 1 :
-                            remove("users.dat");
-                            remove("store.dat");
-                            remove("drugs.dat");
-                            remove("stocks.dat");
-                            remove("invoice.dat");
-                            exit(0);
-                            break;
-                        case 2 :
-                            break;
-                        default :
-                            cout<<"\nWrong Choice. Press any key to try again";
-                            getch();
-                            break;
-                    }
-                }while(cont != 2);
-                break;
-            }
-        }
-    }while(ch != 7);
+      case 1 :
+	int C;
+	do
+	{
+	  header(admin.get_uName());
+	  cout<<"\t1. New Sale\n\t2. View old Bill\n\t3. Back";
+	  line();
+	  cout<<"Enter Your Choice : ";
+	  cin>>C;
+	  cin_flush();
+	  switch(C)
+	  {
+	    case 1 :
+	      header(admin.get_uName());
+	      inv_drug inv[10];
+	      float Total = 0;
+	      int i = 0, zero_items = 1;
+	      unsigned int DCODE = 0, QTY, MRP, BNO = INV.get_new_bno();
+	      char CUST[40], DOC[40], D[50];
+	      cout<<"\tEnter Customer Name : ";
+	      cin.getline(CUST, 40);
+	      cout<<"\tEnter Doctor Name : ";
+	      cin.getline(DOC, 40);
+	      int wh = 1;
+	      do
+	      {
+		stock temp;
+		int flag = 0;
+		unsigned int temp_dcode = DCODE;
+		cout<<"\tEnter Drug Code : ";
+		cin>>DCODE;
+		cin_flush();
+		if(DCODE == temp_dcode)
+		  flag = 1;
+		if(temp.inStock(DCODE) > 0)
+		{
+		  do
+		  {
+		    unsigned int temp_qty = QTY;
+		    cout<<"\tEnter Quantity : ";
+		    cin>>QTY;
+		    if(flag)
+		    {
+		      --i;
+		      QTY += temp_qty;
+		    }
+		    cin_flush();
+		    if(temp.inStock(DCODE) < QTY)
+		    {
+		      cout<<"\n\tOnly "<<temp.inStock(DCODE)<<" Available!!!";
+		      cout<<"\n\tPress any key to Try Again......";
+		      getch();
+		      if(!zero_items)
+		      {
+			header(admin.get_uName());
+			cout<<"\tBill No. : "<<BNO;
+			cout<<"\n\tCustomer Name : "<<CUST;
+			cout<<"\n\tDoctor Name : "<<DOC;
+			cout.setf(ios::left);
+			cout<<"\n\t"<<setw(5)<<"SN"<<setw(30)<<"Particulars"<<setw(4)<<" QTY"<<setw(7)<<"   MRP";
+			for(int k = 0; k<(i+1); k++)
+			{
+			  cout.setf(ios::left);
+			  cout<<"\n\t"<<setw(5)<<inv[k].get_sno()<<setw(30)<<inv[k].get_dName();
+			  cout.setf(ios::right);
+			  cout<<setw(4)<<inv[k].get_qty();
+			  cout<<setw(7)<<inv[k].get_MRP();
+			}
+			line();
+			cout<<"\tDrug Code : "<<DCODE<<"\n";
+		      }
+		      else
+		      {
+			header(admin.get_uName());
+			cout<<"\tEnter Customer Name : "<<CUST;
+			cout<<"\n\tEnter Doctor Name : "<<DOC;
+			cout<<"\n\tEnter Drug Code : "<<DCODE<<"\n";
+		      }
+		    }
+		    else
+		      break;
+		  }while(1);
+		  cout<<"\tEnter MRP : ";
+		  cin>>MRP;
+		  cin_flush();
+		  if(inv[i].set((i+1), DCODE, QTY, MRP))
+		  {
+		    Total += inv[i].get_MRP();
+		    do
+		    {
+		      zero_items = 0;
+		      cout<<"\n\tDo You Want to add more? Y/N";
+		      char co;
+		      co = getch();
+		      if(co == 'y' || co == 'Y')
+		      {
+			header(admin.get_uName());
+			cout<<"\tBill No. : "<<BNO;
+			cout<<"\n\tCustomer Name : "<<CUST;
+			cout<<"\n\tDoctor Name : "<<DOC;
+			cout.setf(ios::left);
+			cout<<"\n\t"<<setw(5)<<"SN"<<setw(30)<<"Particulars"<<setw(4)<<" QTY"<<setw(7)<<"   MRP";
+			for(int k = 0; k<(i+1); k++)
+			{
+			  cout.setf(ios::left);
+			  cout<<"\n\t"<<setw(5)<<inv[k].get_sno()<<setw(30)<<inv[k].get_dName();
+			  cout.setf(ios::right);
+			  cout<<setw(4)<<inv[k].get_qty();
+			  cout<<setw(7)<<inv[k].get_MRP();
+			}
+			line();
+			++i;
+			break;
+		      }
+		      else if(co == 'n' || co == 'N')
+		      {
+			wh = 0;
+			break;
+		      }
+		      else
+		      {
+			cout<<"\n Wrong KEY. Press any key to try again";
+			clrscr();
+		      }
+		    }while(1);
+		  }
+		}
+		else
+		{
+		  cout<<"\n\tItem Out Of Stock.\n\tPress any key to Try Again...";
+		  getch();
+		  header(admin.get_uName());
+		  cout<<"\tBill No. : "<<BNO;
+		  cout<<"\n\tCustomer Name : "<<CUST;
+		  cout<<"\n\tDoctor Name : "<<DOC;
+		  cout.setf(ios::left);
+		  cout<<"\n\t"<<setw(5)<<"SN"<<setw(30)<<"Particulars"<<setw(4)<<" QTY"<<setw(7)<<"   MRP";
+		  for(int k = 0; k<(i+1); k++)
+		  {
+		    cout.setf(ios::left);
+		    cout<<"\n\t"<<setw(5)<<inv[k].get_sno()<<setw(30)<<inv[k].get_dName();
+		    cout.setf(ios::right);
+		    cout<<setw(4)<<inv[k].get_qty();
+		    cout<<setw(7)<<inv[k].get_MRP();
+		  }
+		  line();
+		}
+	      }while(wh == 1 && i<10);
+	      if(!zero_items)
+	      {
+		header(admin.get_uName());
+		cout<<"\tBill No. : "<<BNO;
+		cout<<"\n\tCustomer Name : "<<CUST;
+		cout<<"\n\tDoctor Name : "<<DOC;
+		cout.setf(ios::left);
+		cout<<"\n\t"<<setw(5)<<"SN"<<setw(30)<<"Particulars"<<setw(6)<<"QTY"<<setw(7)<<"   MRP";
+		for(int k = 0; k<(i+1); k++)
+		{
+		  cout.setf(ios::left);
+		  cout<<"\n\t"<<setw(5)<<inv[k].get_sno()<<setw(30)<<inv[k].get_dName();
+		  cout.setf(ios::right);
+		  cout<<setw(6)<<inv[k].get_qty();
+		  cout<<setw(7)<<inv[k].get_MRP();
+		}
+		cout<<"\n\n\tTotal : "<<Total;
+		line();
+		do
+		{
+		  cout<<"\nAmout Paid? Y/N";
+		  char co;
+		  co = getch();
+		  if(co == 'y' || co == 'Y')
+		  {
+		    INV.save(BNO, CUST, DOC, inv, (i+1));
+		    break;
+		  }
+		  else if(co == 'n' || co == 'N')
+		  {
+		    wh = 0;
+		    break;
+		  }
+		  else
+		  {
+		    cout<<"\n Wrong KEY. Press any key to try again";
+		    clrscr();
+		  }
+		}while(1);
+	      }
+	      break;
+	    case 2 :
+	      header(admin.get_uName());
+	      unsigned int bno;
+	      invoice temp;
+	      cout<<"\tEnter Bill No. : ";
+	      cin>>bno;
+	      cin_flush();
+	      header(admin.get_uName());
+	      temp.show(bno);
+	      line();
+	      cout<<"\nPress any key to Go Back.....";
+	      getch();
+	      break;
+	    case 3 :
+	      break;
+	    default :
+	      cout<<"\nWrong Choice. Press any key to try again";
+	      getch();
+	      break;
+	  }
+	}while(C != 3);
+	break;
+
+      case 2 :
+	int c;
+	do
+	{
+	  header(admin.get_uName());
+	  cout<<"\t1. View Stocks\n\t2. Add Stocks\n\t3. Remove Stocks\n\t4. Back";
+	  line();
+	  cout<<"Enter Your Choice : ";
+	  cin>>c;
+	  cin_flush();
+	  switch(c)
+	  {
+	    case 1 :
+	      header(admin.get_uName());
+	      stocks.View();
+	      line();
+	      cout<<"Press any key to Go Back.....";
+	      getch();
+	      break;
+	    case 2 :
+	      header(admin.get_uName());
+	      cout<<"\tEnter Drug Code : ";
+	      unsigned int DC;
+	      int QTY;
+	      cin>>DC;
+	      cout<<"\tEnter Qty to ADD : ";
+	      cin>>QTY;
+	      cin_flush();
+	      stocks.Edit(DC, QTY);
+	      line();
+	      cout<<"Done Press any key to Go Back.....";
+	      break;
+	    case 3 :
+	      header(admin.get_uName());
+	      cout<<"\tEnter Drug Code : ";
+	      unsigned int DCo;
+	      int QTy;
+	      cin>>DCo;
+	      cout<<"\tEnter Qty to Remove : ";
+	      cin>>QTy;
+	      cin_flush();
+	      if(QTy <= stocks.inStock(DCo))
+		{
+		  QTy *= -1;
+		  stocks.Edit(DCo, QTy);
+		  cout<<"\n\tDone!!";
+		}
+	      else
+		cout<<"\n\tQty can't be greater then stock!!!";
+	      line();
+	      cout<<"Press any key to Go Back.....";
+	      getch();
+	      break;
+	    case 4 :
+	      break;
+	    default :
+	      cout<<"\nWrong Choice. Press any key to try again";
+	      getch();
+	      break;
+	  }
+	}while(c != 4);
+	break;
+      case 3 :
+	int P;
+	do
+	{
+	  header(admin.get_uName());
+	  cout<<"\t1. View All Drugs\n\t2. Add a Drug\n\t3. Remove a Drug\n\t4. Back";
+	  line();
+	  cout<<"Enter Your Choice : ";
+	  cin>>P;
+	  cin_flush();
+	  switch(P)
+	  {
+	    case 1 :
+	      header(admin.get_uName());
+	      drugs.view_all();
+	      line();
+	      cout<<"Press any key to Go Back.....";
+	      getch();
+	      break;
+	    case 2 :
+	      header(admin.get_uName());
+	      unsigned int dco;
+	      char dna[50];
+	      cout<<"\n\tEnter New Drug Code : ";
+	      cin>>dco;
+	      cin_flush();
+	      cout<<"\tEnter New Drug Name : ";
+	      cin.getline(dna, 50);
+	      line();
+	      if(!drugs.add(dco, dna))
+		cout<<"Success!!\nPress any key to go back....";
+	      getch();
+	      break;
+	    case 3 :
+	      header(admin.get_uName());
+	      unsigned int Dco;
+	      cout<<"Enter Drug Code to Delete : ";
+	      cin>>Dco;
+	      cin_flush();
+	      line();
+	      if(drugs.del(Dco))
+		cout<<"Success!!\nPress any key to go back....";
+	      else
+		cout<<"NOT FOUND!!\nPress any key to go back....";
+	      getch();
+	      break;
+	    case 4 :
+	      break;
+	    default :
+	      cout<<"\nWrong Choice. Press any key to try again";
+	      getch();
+	      break;
+	  }
+	}while(P != 4);
+	break;
+      case 4 :
+	int x;
+	do
+	{
+	  header(admin.get_uName());
+	  cout<<"\t1. Manage My Account\n\t2. Manage other account\n\t3. Back\n";
+	  line();
+	  cout<<"Enter Your Choice : ";
+	  cin>>x;
+	  cin_flush();
+	  switch(x)
+	  {
+	    case 1 :
+	      int l;
+	      do
+	      {
+		header(admin.get_uName());
+		cout<<"\t1. View My Account\n\t2. Change My Account\n\t3. Back\n";
+		line();
+		cout<<"Enter Your Choice : ";
+		cin>>l;
+		cin_flush();
+		switch(l)
+		{
+		  case 1 :
+		    header(admin.get_uName());
+		    cout<<"\n\t\tMy User Name : "<<admin.get_uName();
+		    cout<<"\n\t\tMy Password : "<<admin.get_uPass();
+		    cout<<"\n\t\tAccount Type : ";
+		    if(admin.get_isAdmin() == 1)
+		      cout<<"Admin";
+		    else if(admin.get_isAdmin() == 0)
+		      cout<<"Non - Admin";
+		    else
+		      cout<<"Unknown";
+		    line();
+		    cout<<"Press any key to Go Back.....";
+		    getch();
+		    break;
+		  case 2 :
+		    char us[30], np1[30], np2[30];
+		    header(admin.get_uName());
+		    cout<<"\n\t\tEnter New User Name : ";
+		    cin.getline(us, 30);
+		    do
+		    {
+		      cout<<"\t\tEnter New Password : ";
+		      pass(np1, 30);
+		      cout<<"\n\t\tConfirm Password : ";
+		      pass(np2, 30);
+		      if(!strcmp(np1, np2))
+		      {
+			if(admin.Edit(us, np1, 1))
+			  cout<<"SUCCESS!!!";
+			else
+			  cout<<"Something went wrong!!";
+			break;
+		      }
+		      else
+		      {
+			cout<<"Press any key to try again";
+			getch();
+			clrscr();
+		      }
+		    }while(1);
+		    break;
+		  case 3 :
+		    break;
+		  default :
+		    cout<<"\nWrong Choice. Press any key to try again";
+		    getch();
+		    break;
+		}
+	      }while(l != 3);
+
+	      break;
+	    case 2 :
+	      int v;
+	      do
+	      {
+		header(admin.get_uName());
+		cout<<"\n\t1. Create New Account\n\t2. View All Account\n\t3. Back\n";
+		line();
+		cout<<"Enter Your Choice : ";
+		cin>>v;
+		cin_flush();
+		switch(v)
+		{
+		  case 1 :
+		    char UN[30], UP1[30], UP2[30];
+		    header(admin.get_uName());
+		    cout<<"\n\t\tEnter User Name : ";
+		    cin.getline(UN, 30);
+		    while(1)
+		    {
+		      cout<<"\t\tEnter Password : ";
+		      pass(UP1, 30);
+		      cout<<"\n\t\tConfirm Password : ";
+		      pass(UP2, 30);
+		      if(!strcmp(UP1, UP2))
+		      {
+			user temp;
+			while(1)
+			{
+			  cout<<"\n\n\t\tIs An ADMIN? Y/N";
+			  char g;
+			  g = getche();
+			  if(g == 'y' || g == 'Y')
+			  {
+			    if(!temp.Reg(UN, UP1, 1))
+			    {
+			      line();
+			      cout<<"\nSuccess!!\nPress any key to Go Back...";
+			      getch();
+			    }
+			    break;
+			  }
+			  else if(g == 'n' || g == 'N')
+			  {
+			    if(!temp.Reg(UN, UP1, 0))
+			    {
+			      line();
+			      cout<<"\nSuccess!!\nPress any key to Go Back...";
+			      getch();
+			    }
+			    break;
+			  }
+			  else
+			  {
+			    cout<<"Wrong choice. Try Again";
+			    getch();
+			  }
+			}
+			break;
+		      }
+		      else
+		      {
+			cout<<"Try Again";
+			getch();
+			clrscr();
+		      }
+		    }
+		    break;
+		  case 2 :
+		    header(admin.get_uName());
+		    admin.view_all();
+		    line();
+		    cout<<"Press any key to Go Back";
+		    getch();
+		    break;
+		  case 3 :
+		    break;
+
+		}
+	      }while(v != 3);
+	      break;
+	    case 3 :
+	      break;
+	    default :
+	      cout<<"\nWrong Choice. Press any key to try again";
+	      getch();
+	      break;
+	  }
+	}while(x != 3);
+	break;
+      case 5 :
+	int y;
+	do
+	{
+	  header(admin.get_uName());
+	  cout<<"\t1. View Store Info\n\t2. Change Store Info\n\t3. Back";
+	  line();
+	  cout<<"Enter Your Choice : ";
+	  cin>>y;
+	  cin_flush();
+	  switch(y)
+	  {
+	    case 1 :
+	      header(admin.get_uName());
+	      StInfo.show();
+	      line();
+	      cout<<"Press any key to Go Back.....";
+	      getch();
+	      break;
+	    case 2 :
+	      header(admin.get_uName());
+	      StInfo.set_store();
+	      line();
+	      cout<<"New Data Saved..";
+	      cout<<"\nPress any key to Go Back.....";
+	      getch();
+	      break;
+	    case 3 :
+	      break;
+	    default :
+	      cout<<"\nWrong Choice. Press any key to try again";
+	      getch();
+	      break;
+	  }
+	}while(y != 3);
+	break;
+      case 6 :
+	main_login();
+	break;
+      case 7 :
+	exit(0);
+	break;
+      case 8 :
+	int cont;
+	do
+	{
+	  header(admin.get_uName());
+	  cout<<"\n\nThis will Factory Reset the Application And Delete all the data stored";
+	  cout<<"\nDo you Want to continue?";
+	  cout<<"\n\t1. Yes\n\t2. No\n";
+	  cout<<"\n\n|------------------------------------------------------------------------------|\n";
+	  cout<<"Enter Your Choice : ";
+	  cin>>cont;
+	  cin_flush();
+	  switch(cont)
+	  {
+	    case 1 :
+	      remove("users.dat");
+	      remove("store.dat");
+	      remove("drugs.dat");
+	      remove("stocks.dat");
+	      remove("invoice.dat");
+	      exit(0);
+	      break;
+	    case 2 :
+	      break;
+	    default :
+	      cout<<"\nWrong Choice. Press any key to try again";
+	      getch();
+	      break;
+	  }
+	}while(cont != 2);
+	break;
+    }
+  }while(ch != 7);
 }
 
 void main_user(user &User)
 {
-    int ch;
-    do
+  int ch;
+  do
+  {
+    header(User.get_uName());
+    cout<<"\t1. Sales\n\t2. View Stocks\n\t3. My Account\n\t4. View Store Info\n\t5. Logout\n\t6. EXIT";
+    line();
+    cout<<"Enter Your Choice : ";
+    cin>>ch;
+    cin_flush();
+    switch(ch)
     {
-        header(User.get_uName());
-        cout<<"\t1. Sales\n\t2. View Stocks\n\t3. My Account\n\t4. View Store Info\n\t5. Logout\n\t6. EXIT";
-        line();
-        cout<<"Enter Your Choice : ";
-        cin>>ch;
-        cin_flush();
-        switch(ch)
-        {
-            case 1 :
-            {
-                int C;
-                do
-                {
-                    header(User.get_uName());
-                    cout<<"\t1. New Sale\n\t2. View old Bill\n\t3. Back";
-                    line();
-                    cout<<"Enter Your Choice : ";
-                    cin>>C;
-                    cin_flush();
-                    switch(C)
-                    {
-                        case 1 ://New Sale
-                        {
-                            header(User.get_uName());
-                            inv_drug inv[10];
-                            float Total = 0;
-                            int i = 0, zero_items = 1;
-                            unsigned int DCODE = 0, QTY, MRP, BNO = INV.get_new_bno();
-                            char CUST[40], DOC[40], D[50];
-                            cout<<"\tEnter Customer Name : ";
-                            cin.getline(CUST, 40);
-                            cout<<"\tEnter Doctor Name : ";
-                            cin.getline(DOC, 40);
-                            int wh = 1;
-                            do
-                            {
-                                stock temp;
-                                int flag = 0;
-                                unsigned int temp_dcode = DCODE;
-                                cout<<"\tEnter Drug Code : ";
-                                cin>>DCODE;
-                                cin_flush();
-                                if(DCODE == temp_dcode)
-                                flag = 1;
-                                if(temp.inStock(DCODE) > 0)
-                                {
-                                    do
-                                    {
-                                        unsigned int temp_qty = QTY;
-                                        cout<<"\tEnter Quantity : ";
-                                        cin>>QTY;
-                                        if(flag)
-                                        {
-                                            --i;
-                                            QTY += temp_qty;
-                                        }
-                                        cin_flush();
-                                        if(temp.inStock(DCODE) < QTY)
-                                        {
-                                            cout<<"\n\tOnly "<<temp.inStock(DCODE)<<" Available!!!";
-                                            cout<<"\n\tPress any key to Try Again......";
-                                            getch();
-                                            if(!zero_items)
-                                            {
-                                                header(User.get_uName());
-                                                cout<<"\tBill No. : "<<BNO;
-                                                cout<<"\n\tCustomer Name : "<<CUST;
-                                                cout<<"\n\tDoctor Name : "<<DOC;
-                                                cout.setf(ios::left);
-                                                cout<<"\n\t"<<setw(5)<<"SN"<<setw(30)<<"Particulars"<<setw(4)<<" QTY"<<setw(7)<<"   MRP";
-                                                for(int k = 0; k<(i+1); k++)
-                                                {
-                                                    cout.setf(ios::left);
-                                                    cout<<"\n\t"<<setw(5)<<inv[k].get_sno()<<setw(30)<<inv[k].get_dName();
-                                                    cout.setf(ios::right);
-                                                    cout<<setw(4)<<inv[k].get_qty();
-                                                    cout<<setw(7)<<inv[k].get_MRP();
-                                                }
-                                                line();
-                                                cout<<"\tDrug Code : "<<DCODE<<"\n";
-                                            }
-                                            else
-                                            {
-                                                header(User.get_uName());
-                                                cout<<"\tEnter Customer Name : "<<CUST;
-                                                cout<<"\n\tEnter Doctor Name : "<<DOC;
-                                                cout<<"\n\tEnter Drug Code : "<<DCODE<<"\n";
-                                            }
-                                        }
-                                        else
-                                            break;
-                                    }while(1);
-                                    cout<<"\tEnter MRP : ";
-                                    cin>>MRP;
-                                    cin_flush();
-                                    if(inv[i].set((i+1), DCODE, QTY, MRP))
-                                    {
-                                        Total += inv[i].get_MRP();
-                                        do
-                                        {
-                                            zero_items = 0;
-                                            cout<<"\n\tDo You Want to add more? Y/N";
-                                            char co;
-                                            co = getch();
-                                            if(co == 'y' || co == 'Y')
-                                            {
-                                                header(User.get_uName());
-                                                cout<<"\tBill No. : "<<BNO;
-                                                cout<<"\n\tCustomer Name : "<<CUST;
-                                                cout<<"\n\tDoctor Name : "<<DOC;
-                                                cout.setf(ios::left);
-                                                cout<<"\n\t"<<setw(5)<<"SN"<<setw(30)<<"Particulars"<<setw(4)<<" QTY"<<setw(7)<<"   MRP";
-                                                for(int k = 0; k<(i+1); k++)
-                                                {
-                                                    cout.setf(ios::left);
-                                                    cout<<"\n\t"<<setw(5)<<inv[k].get_sno()<<setw(30)<<inv[k].get_dName();
-                                                    cout.setf(ios::right);
-                                                    cout<<setw(4)<<inv[k].get_qty();
-                                                    cout<<setw(7)<<inv[k].get_MRP();
-                                                }
-                                                line();
-                                                ++i;
-                                                break;
-                                            }
-                                            else if(co == 'n' || co == 'N')
-                                            {
-                                                wh = 0;
-                                                break;
-                                            }
-                                            else
-                                            {
-                                                cout<<"\n Wrong KEY. Press any key to try again";
-                                                system("cls");
-                                            }
-                                        }while(1);
-                                    }
-                                }
-                                else
-                                {
-                                    cout<<"\n\tItem Out Of Stock.\n\tPress any key to Try Again...";
-                                    getch();
-                                    header(User.get_uName());
-                                    cout<<"\tBill No. : "<<BNO;
-                                    cout<<"\n\tCustomer Name : "<<CUST;
-                                    cout<<"\n\tDoctor Name : "<<DOC;
-                                    cout.setf(ios::left);
-                                    cout<<"\n\t"<<setw(5)<<"SN"<<setw(30)<<"Particulars"<<setw(4)<<" QTY"<<setw(7)<<"   MRP";
-                                    for(int k = 0; k<(i+1); k++)
-                                    {
-                                        cout.setf(ios::left);
-                                        cout<<"\n\t"<<setw(5)<<inv[k].get_sno()<<setw(30)<<inv[k].get_dName();
-                                        cout.setf(ios::right);
-                                        cout<<setw(4)<<inv[k].get_qty();
-                                        cout<<setw(7)<<inv[k].get_MRP();
-                                    }
-                                    line();
-                                }
-                            }while(wh == 1 && i<10);
-                            if(!zero_items)
-                            {
-                                header(User.get_uName());
-                                cout<<"\tBill No. : "<<BNO;
-                                cout<<"\n\tCustomer Name : "<<CUST;
-                                cout<<"\n\tDoctor Name : "<<DOC;
-                                cout.setf(ios::left);
-                                cout<<"\n\t"<<setw(5)<<"SN"<<setw(30)<<"Particulars"<<setw(6)<<"QTY"<<setw(7)<<"   MRP";
-                                for(int k = 0; k<(i+1); k++)
-                                {
-                                    cout.setf(ios::left);
-                                    cout<<"\n\t"<<setw(5)<<inv[k].get_sno()<<setw(30)<<inv[k].get_dName();
-                                    cout.setf(ios::right);
-                                    cout<<setw(6)<<inv[k].get_qty();
-                                    cout<<setw(7)<<inv[k].get_MRP();
-                                }
-                                cout<<"\n\n\tTotal : "<<Total;
-                                line();
-                                do
-                                {
-                                    cout<<"\nAmout Paid? Y/N";
-                                    char co;
-                                    co = getch();
-                                    if(co == 'y' || co == 'Y')
-                                    {
-                                        INV.save(BNO, CUST, DOC, inv, (i+1));
-                                        break;
-                                    }
-                                    else if(co == 'n' || co == 'N')
-                                    {
-                                        wh = 0;
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        cout<<"\n Wrong KEY. Press any key to try again";
-                                        system("cls");
-                                    }
-                                }while(1);
-                            }
-                            break;
-                        }
-                        case 2 :
-                        {
-                            header(User.get_uName());
-                            unsigned int bno;
-                            invoice temp;
-                            cout<<"\tEnter Bill No. : ";
-                            cin>>bno;
-                            cin_flush();
-                            header(User.get_uName());
-                            temp.show(bno);
-                            line();
-                            cout<<"\nPress any key to Go Back.....";
-                            getch();
-                            break;
-                            case 3 :
-                            break;
-                            default :
-                            cout<<"\nWrong Choice. Press any key to try again";
-                            getch();
-                            break;
-                        }
-                    }
-                }while(C != 3);
-                break;
-            }
-            case 2 : //View Stocks
-             {
-                header(User.get_uName());
-                stocks.View();
-                line();
-                cout<<"Press any key to Go Back.....";
-                getch();
-                break;
-             }
-            case 3 :
-            {
-                int l;
-                do
-                {
-                    header(User.get_uName());
-                    cout<<"\t1. View My Account\n\t2. Change My Account\n\t3. Back\n";
-                    line();
-                    cout<<"Enter Your Choice : ";
-                    cin>>l;
-                    cin_flush();
-                    switch(l)
-                    {
-                        case 1 :
-                            header(User.get_uName());
-                            cout<<"\n\t\tMy User Name : "<<User.get_uName();
-                            cout<<"\n\t\tMy Password : "<<User.get_uPass();
-                            cout<<"\n\t\tAccount Type : ";
-                            if(User.get_isAdmin())
-                                cout<<"Admin";
-                            else
-                                cout<<"Non - Admin";
-                            line();
-                            cout<<"Press any key to Go Back.....";
-                            getch();
-                            break;
-                        case 2 :
-                            char us[30], np1[30], np2[30];
-                            header(User.get_uName());
-                            cout<<"\n\t\tEnter New User Name : ";
-                            cin.getline(us, 30);
-                            do
-                            {
-                                cout<<"\t\tEnter New Password : ";
-                                pass(np1, 30);
-                                cout<<"\n\t\tConfirm Password : ";
-                                pass(np2, 30);
-                                if(!strcmp(np1, np2))
-                                {
-                                    if(User.Edit(us, np1, 1))
-                                        cout<<"SUCCESS!!!";
-                                    else
-                                        cout<<"Something went wrong!!";
-                                    break;
-                                }
-                                else
-                                {
-                                    cout<<"Press any key to try again";
-                                    getch();
-                                    system("cls");
-                                }
-                            }while(1);
-                            break;
-                        case 3 :
-                            break;
-                        default :
-                            cout<<"\nWrong Choice. Press any key to try again";
-                            getch();
-                            break;
-                    }
-                }while(l != 3);
-                break;
-            }
-            case 4 :
-            {
-                header(User.get_uName());
-                StInfo.show();
-                line();
-                cout<<"Press any key to Go Back.....";
-                getch();
-                break;
-            }
-            case 5 :
-                main_login();
-                break;
-            case 6 :
-                exit(0);
-                break;
-        }
-    }while(ch != 6);
+      case 1 :
+	int C;
+	do
+	{
+	  header(User.get_uName());
+	  cout<<"\t1. New Sale\n\t2. View old Bill\n\t3. Back";
+	  line();
+	  cout<<"Enter Your Choice : ";
+	  cin>>C;
+	  cin_flush();
+	  switch(C)
+	  {
+	    case 1 :
+	      header(User.get_uName());
+	      inv_drug inv[10];
+	      float Total = 0;
+	      int i = 0, zero_items = 1;
+	      unsigned int DCODE = 0, QTY, MRP, BNO = INV.get_new_bno();
+	      char CUST[40], DOC[40], D[50];
+	      cout<<"\tEnter Customer Name : ";
+	      cin.getline(CUST, 40);
+	      cout<<"\tEnter Doctor Name : ";
+	      cin.getline(DOC, 40);
+	      int wh = 1;
+	      do
+	      {
+		stock temp;
+		int flag = 0;
+		unsigned int temp_dcode = DCODE;
+		cout<<"\tEnter Drug Code : ";
+		cin>>DCODE;
+		cin_flush();
+		if(DCODE == temp_dcode)
+		  flag = 1;
+		if(temp.inStock(DCODE) > 0)
+		{
+		  do
+		  {
+		    unsigned int temp_qty = QTY;
+		    cout<<"\tEnter Quantity : ";
+		    cin>>QTY;
+		    if(flag)
+		    {
+		      --i;
+		      QTY += temp_qty;
+		    }
+		    cin_flush();
+		    if(temp.inStock(DCODE) < QTY)
+		    {
+		      cout<<"\n\tOnly "<<temp.inStock(DCODE)<<" Available!!!";
+		      cout<<"\n\tPress any key to Try Again......";
+		      getch();
+		      if(!zero_items)
+		      {
+			header(User.get_uName());
+			cout<<"\tBill No. : "<<BNO;
+			cout<<"\n\tCustomer Name : "<<CUST;
+			cout<<"\n\tDoctor Name : "<<DOC;
+			cout.setf(ios::left);
+			cout<<"\n\t"<<setw(5)<<"SN"<<setw(30)<<"Particulars"<<setw(4)<<" QTY"<<setw(7)<<"   MRP";
+			for(int k = 0; k<(i+1); k++)
+			{
+			  cout.setf(ios::left);
+			  cout<<"\n\t"<<setw(5)<<inv[k].get_sno()<<setw(30)<<inv[k].get_dName();
+			  cout.setf(ios::right);
+			  cout<<setw(4)<<inv[k].get_qty();
+			  cout<<setw(7)<<inv[k].get_MRP();
+			}
+			line();
+			cout<<"\tDrug Code : "<<DCODE<<"\n";
+		      }
+		      else
+		      {
+			header(User.get_uName());
+			cout<<"\tEnter Customer Name : "<<CUST;
+			cout<<"\n\tEnter Doctor Name : "<<DOC;
+			cout<<"\n\tEnter Drug Code : "<<DCODE<<"\n";
+		      }
+		    }
+		    else
+		      break;
+		  }while(1);
+		  cout<<"\tEnter MRP : ";
+		  cin>>MRP;
+		  cin_flush();
+		  if(inv[i].set((i+1), DCODE, QTY, MRP))
+		  {
+		    Total += inv[i].get_MRP();
+		    do
+		    {
+		      zero_items = 0;
+		      cout<<"\n\tDo You Want to add more? Y/N";
+		      char co;
+		      co = getch();
+		      if(co == 'y' || co == 'Y')
+		      {
+			header(User.get_uName());
+			cout<<"\tBill No. : "<<BNO;
+			cout<<"\n\tCustomer Name : "<<CUST;
+			cout<<"\n\tDoctor Name : "<<DOC;
+			cout.setf(ios::left);
+			cout<<"\n\t"<<setw(5)<<"SN"<<setw(30)<<"Particulars"<<setw(4)<<" QTY"<<setw(7)<<"   MRP";
+			for(int k = 0; k<(i+1); k++)
+			{
+			  cout.setf(ios::left);
+			  cout<<"\n\t"<<setw(5)<<inv[k].get_sno()<<setw(30)<<inv[k].get_dName();
+			  cout.setf(ios::right);
+			  cout<<setw(4)<<inv[k].get_qty();
+			  cout<<setw(7)<<inv[k].get_MRP();
+			}
+			line();
+			++i;
+			break;
+		      }
+		      else if(co == 'n' || co == 'N')
+		      {
+			wh = 0;
+			break;
+		      }
+		      else
+		      {
+			cout<<"\n Wrong KEY. Press any key to try again";
+			clrscr();
+		      }
+		    }while(1);
+		  }
+		}
+		else
+		{
+		  cout<<"\n\tItem Out Of Stock.\n\tPress any key to Try Again...";
+		  getch();
+		  header(User.get_uName());
+		  cout<<"\tBill No. : "<<BNO;
+		  cout<<"\n\tCustomer Name : "<<CUST;
+		  cout<<"\n\tDoctor Name : "<<DOC;
+		  cout.setf(ios::left);
+		  cout<<"\n\t"<<setw(5)<<"SN"<<setw(30)<<"Particulars"<<setw(4)<<" QTY"<<setw(7)<<"   MRP";
+		  for(int k = 0; k<(i+1); k++)
+		  {
+		    cout.setf(ios::left);
+		    cout<<"\n\t"<<setw(5)<<inv[k].get_sno()<<setw(30)<<inv[k].get_dName();
+		    cout.setf(ios::right);
+		    cout<<setw(4)<<inv[k].get_qty();
+		    cout<<setw(7)<<inv[k].get_MRP();
+		  }
+		  line();
+		}
+	      }while(wh == 1 && i<10);
+	      if(!zero_items)
+	      {
+		header(User.get_uName());
+		cout<<"\tBill No. : "<<BNO;
+		cout<<"\n\tCustomer Name : "<<CUST;
+		cout<<"\n\tDoctor Name : "<<DOC;
+		cout.setf(ios::left);
+		cout<<"\n\t"<<setw(5)<<"SN"<<setw(30)<<"Particulars"<<setw(6)<<"QTY"<<setw(7)<<"   MRP";
+		for(int k = 0; k<(i+1); k++)
+		{
+		  cout.setf(ios::left);
+		  cout<<"\n\t"<<setw(5)<<inv[k].get_sno()<<setw(30)<<inv[k].get_dName();
+		  cout.setf(ios::right);
+		  cout<<setw(6)<<inv[k].get_qty();
+		  cout<<setw(7)<<inv[k].get_MRP();
+		}
+		cout<<"\n\n\tTotal : "<<Total;
+		line();
+		do
+		{
+		  cout<<"\nAmout Paid? Y/N";
+		  char co;
+		  co = getch();
+		  if(co == 'y' || co == 'Y')
+		  {
+		    INV.save(BNO, CUST, DOC, inv, (i+1));
+		    break;
+		  }
+		  else if(co == 'n' || co == 'N')
+		  {
+		    wh = 0;
+		    break;
+		  }
+		  else
+		  {
+		    cout<<"\n Wrong KEY. Press any key to try again";
+		    clrscr();
+		  }
+		}while(1);
+	      }
+	      break;
+	    case 2 :
+	      header(User.get_uName());
+	      unsigned int bno;
+	      invoice temp;
+	      cout<<"\tEnter Bill No. : ";
+	      cin>>bno;
+	      cin_flush();
+	      header(User.get_uName());
+	      temp.show(bno);
+	      line();
+	      cout<<"\nPress any key to Go Back.....";
+	      getch();
+	      break;
+	    case 3 :
+	      break;
+	    default :
+	      cout<<"\nWrong Choice. Press any key to try again";
+	      getch();
+	      break;
+	  }
+	}while(C != 3);
+	break;
+
+      case 2 :
+	header(User.get_uName());
+	stocks.View();
+	line();
+	cout<<"Press any key to Go Back.....";
+	getch();
+	break;
+      case 3 :
+	int l;
+	do
+	{
+	  header(User.get_uName());
+	  cout<<"\t1. View My Account\n\t2. Change My Account\n\t3. Back\n";
+	  line();
+	  cout<<"Enter Your Choice : ";
+	  cin>>l;
+	  cin_flush();
+	  switch(l)
+	  {
+	    case 1 :
+	      header(User.get_uName());
+	      cout<<"\n\t\tMy User Name : "<<User.get_uName();
+	      cout<<"\n\t\tMy Password : "<<User.get_uPass();
+	      cout<<"\n\t\tAccount Type : ";
+	      if(User.get_isAdmin())
+		cout<<"Admin";
+	      else
+		cout<<"Non - Admin";
+	      line();
+	      cout<<"Press any key to Go Back.....";
+	      getch();
+	      break;
+	    case 2 :
+	      char us[30], np1[30], np2[30];
+	      header(User.get_uName());
+	      cout<<"\n\t\tEnter New User Name : ";
+	      cin.getline(us, 30);
+	      do
+	      {
+		cout<<"\t\tEnter New Password : ";
+		pass(np1, 30);
+		cout<<"\n\t\tConfirm Password : ";
+		pass(np2, 30);
+		if(!strcmp(np1, np2))
+		{
+		  if(User.Edit(us, np1, 1))
+		    cout<<"SUCCESS!!!";
+		  else
+		    cout<<"Something went wrong!!";
+		  break;
+		}
+		else
+		{
+		  cout<<"Press any key to try again";
+		  getch();
+		  clrscr();
+		}
+	      }while(1);
+	      break;
+	    case 3 :
+	      break;
+	    default :
+	      cout<<"\nWrong Choice. Press any key to try again";
+	      getch();
+	      break;
+	  }
+	}while(l != 3);
+	break;
+      case 4 :
+	header(User.get_uName());
+	StInfo.show();
+	line();
+	cout<<"Press any key to Go Back.....";
+	getch();
+	break;
+      case 5 :
+	main_login();
+	break;
+      case 6 :
+	exit(0);
+	break;
+    }
+  }while(ch != 6);
 }
 
 int main()
 {
-  system("cls");
+  clrscr();
   if(!main_init())
     main_login();
 
