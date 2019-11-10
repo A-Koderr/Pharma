@@ -1,4 +1,4 @@
-# Pharma
+# Pharma Turbo C++
 Pharmacy Management
 This Application allows you to manage Pharmacy Store
 
